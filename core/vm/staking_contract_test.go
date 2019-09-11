@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/PlatONnetwork/PlatON-Go/x/handler"
+	"github.com/PlatONnetwork/PlatON-Go/node"
 
 	"github.com/PlatONnetwork/PlatON-Go/common/mock"
 	"github.com/stretchr/testify/assert"
@@ -56,11 +56,11 @@ func create_staking(blockNumber *big.Int, blockHash common.Hash, state *mock.Moc
 	programVersion, _ := rlp.EncodeToBytes(initProgramVersion)
 	//programVersion, _ := rlp.EncodeToBytes(uint(1793))
 
-	handler.GetCryptoHandler().SetPrivateKey(priKeyArr[index])
+	node.GetCryptoHandler().SetPrivateKey(priKeyArr[index])
 	//xcom.GetCryptoHandler().SetPrivateKey(crypto.HexMustToECDSA("6988ba552730892c82f0acd4ea0ac5e630b752c0afe41c35fc1d42e5d2de97e5"))
 
 	versionSign := common.VersionSign{}
-	versionSign.SetBytes(handler.GetCryptoHandler().MustSign(initProgramVersion))
+	versionSign.SetBytes(node.GetCryptoHandler().MustSign(initProgramVersion))
 	//versionSign.SetBytes(xcom.GetCryptoHandler().MustSign(uint32(1793)))
 	sign, _ := rlp.EncodeToBytes(versionSign)
 
@@ -99,8 +99,8 @@ func create_staking(blockNumber *big.Int, blockHash common.Hash, state *mock.Moc
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
-	t.Log("the staking result Msg:", r.ErrMsg)
+	assert.Equal(t, common.OkCode, r.Code)
+	t.Log("the staking result Msg:", r.Message)
 
 	return contract
 }
@@ -136,8 +136,8 @@ func create_delegate(contract *StakingContract, index int, t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
-	t.Log("the delegate result Msg:", r.ErrMsg)
+	assert.Equal(t, common.OkCode, r.Code)
+	t.Log("the delegate result Msg:", r.Message)
 
 }
 
@@ -166,7 +166,7 @@ func getCandidate(contract *StakingContract, index int, t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
+	assert.Equal(t, common.OkCode, r.Code)
 	t.Log("the Candidate info:", r.Data)
 
 }
@@ -273,8 +273,8 @@ func TestStakingContract_editCandidate(t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
-	t.Log("the editStaking result Msg:", r.ErrMsg)
+	assert.Equal(t, common.OkCode, r.Code)
+	t.Log("the editStaking result Msg:", r.Message)
 
 	if err := sndb.Commit(blockHash2); nil != err {
 		t.Errorf("Failed to commit snapshotdb, blockNumber: %d, blockHash: %s, err: %v", blockNumber2, blockHash2.Hex(), err)
@@ -360,8 +360,8 @@ func TestStakingContract_increaseStaking(t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
-	t.Log("the increaseStaking result Msg:", r.ErrMsg)
+	assert.Equal(t, common.OkCode, r.Code)
+	t.Log("the increaseStaking result Msg:", r.Message)
 
 	if err := sndb.Commit(blockHash2); nil != err {
 		t.Errorf("Failed to commit snapshotdb, blockNumber: %d, blockHash: %s, err: %v", blockNumber2, blockHash2.Hex(), err)
@@ -444,8 +444,8 @@ func TestStakingContract_withdrewCandidate(t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
-	t.Log("the withdrew candidate result Msg:", r.ErrMsg)
+	assert.Equal(t, common.OkCode, r.Code)
+	t.Log("the withdrew candidate result Msg:", r.Message)
 
 	if err := sndb.Commit(blockHash2); nil != err {
 		t.Errorf("Failed to commit snapshotdb, blockNumber: %d, blockHash: %s, err: %v", blockNumber2, blockHash2.Hex(), err)
@@ -598,8 +598,8 @@ func TestStakingContract_withdrewDelegate(t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
-	t.Log("the withdelegate result Msg:", r.ErrMsg)
+	assert.Equal(t, common.OkCode, r.Code)
+	t.Log("the withdelegate result Msg:", r.Message)
 
 	if err := sndb.Commit(blockHash2); nil != err {
 		t.Errorf("Failed to commit snapshotdb, blockNumber: %d, blockHash: %s, err: %v", blockNumber2, blockHash2.Hex(), err)
@@ -661,7 +661,7 @@ func TestStakingContract_getVerifierList(t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
+	assert.Equal(t, common.OkCode, r.Code)
 	t.Log("the getVerifierList result Data:", r.Data)
 
 }
@@ -875,7 +875,7 @@ func TestStakingContract_getValidatorList(t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
+	assert.Equal(t, common.OkCode, r.Code)
 	t.Log("the getValidatorList result Data:", r.Data)
 
 }
@@ -947,7 +947,7 @@ func TestStakingContract_getCandidateList(t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
+	assert.Equal(t, common.OkCode, r.Code)
 	t.Log("the getCandidateList result Data:", r.Data)
 
 }
@@ -1025,7 +1025,7 @@ func TestStakingContract_getRelatedListByDelAddr(t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
+	assert.Equal(t, common.OkCode, r.Code)
 	t.Log("the getRelatedListByDelAddr result Data:", r.Data)
 }
 
@@ -1112,7 +1112,7 @@ func TestStakingContract_getDelegateInfo(t *testing.T) {
 	var r xcom.Result
 	err = json.Unmarshal(res, &r)
 	assert.True(t, nil == err)
-	assert.Equal(t, true, r.Status)
+	assert.Equal(t, common.OkCode, r.Code)
 	t.Log("the getDelegateInfo result Data:", r.Data)
 }
 
