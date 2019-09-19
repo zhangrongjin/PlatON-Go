@@ -146,6 +146,7 @@ func (rc *RestrictingContract) getRestrictingBalance(accounts string) ([]byte, e
 		}
 	}
 	resByte, _ := json.Marshal(rs)
+	log.Debug("Call getRestrictingBalance of RestrictingContract result", "txHash", txHash.Hex(), "accounts:",accounts, "blockNumber", currNumber.Uint64(), "result", string(resByte));
 	return xcom.NewSuccessResult(string(resByte)), nil
 }
 
