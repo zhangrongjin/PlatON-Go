@@ -21,6 +21,7 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
+	"math/big"
 	"math/rand"
 	"net"
 	"sync"
@@ -62,6 +63,9 @@ type Config struct {
 	// This field must be set to a valid secp256k1 private key.
 	PrivateKey *ecdsa.PrivateKey `toml:"-"`
 
+	// chainId identifies the current chain and is used for replay protection
+	ChainID *big.Int `toml:"-"`
+
 	// MaxPeers is the maximum number of peers that can be
 	// connected. It must be greater than zero.
 	MaxPeers int
@@ -94,7 +98,7 @@ type Config struct {
 
 	// BootstrapNodes are used to establish connectivity
 	// with the rest of the network.
-	BootstrapNodes []*discover.Node `json:"-"`
+	BootstrapNodes []*discover.Node
 
 	// BootstrapNodesV5 are used to establish connectivity
 	// with the rest of the network using the V5 discovery
@@ -524,6 +528,7 @@ func (srv *Server) Start() (err error) {
 	if !srv.NoDiscovery {
 		cfg := discover.Config{
 			PrivateKey:   srv.PrivateKey,
+			ChainID:      srv.ChainID,
 			AnnounceAddr: realaddr,
 			NodeDBPath:   srv.NodeDatabase,
 			NetRestrict:  srv.NetRestrict,
