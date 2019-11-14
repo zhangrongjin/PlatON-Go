@@ -1077,24 +1077,29 @@ func (s *PublicTransactionPoolAPI) GetTransactionReceipt(ctx context.Context, ha
 
 // GetTransactionByBlock returns the transaction receipt for the given block number.
 func (s *PublicTransactionPoolAPI) GetTransactionByBlock(ctx context.Context, blockNumber uint64) ([]map[string]interface{}, error) {
+	start := time.Now().UnixNano() / 1e6;
+	log.Debug("press,GetTransactionByBlock", "start time：%v;",start);
 	blockNr :=  rpc.BlockNumber(blockNumber);
 	block, err := s.b.BlockByNumber(ctx, blockNr)
 	if block == nil {
 		return nil, err;
 	}
-
+	log.Debug("press,GetTransactionByBlock", "get block time：%v;",time.Now().UnixNano() / 1e6 - start);
 	queue := make([]map[string]interface{}, len(block.Transactions()))
 	for key, value := range block.Transactions() {
+		log.Debug("press,GetTransactionByBlock", "key", key, "get transaction start time;",time.Now().UnixNano() / 1e6 - start);
 		tx, blockHash, blockNumber, index := rawdb.ReadTransaction(s.b.ChainDb(), value.Hash())
 		if tx == nil {
 			log.Error("rpcGetTransactionByBlock, get tx error","blockHash:",blockHash,"blockNumber:",blockNumber,"index:",index)
 			continue
 		}
+		log.Debug("press,GetTransactionByBlock", "key", key, "get transaction end time;",time.Now().UnixNano() / 1e6 - start);
 		receipts, err := s.b.GetReceipts(ctx, blockHash)
 		if err != nil {
 			log.Error("rpcGetTransactionByBlock, get receipt error","receipts:",receipts)
 			continue
 		}
+		log.Debug("press,GetTransactionByBlock", "key", key, "get receipts end time;",time.Now().UnixNano() / 1e6 - start);
 		if len(receipts) <= int(index) {
 			log.Error("rpcGetTransactionByBlock, get receipt length error","receipts:",receipts,"index:",index)
 			continue
@@ -1114,6 +1119,7 @@ func (s *PublicTransactionPoolAPI) GetTransactionByBlock(ctx context.Context, bl
 			}
 			rb.Logs[logIndex] = tb
 		}
+		log.Debug("press,GetTransactionByBlock", "key", key, "range end time;",time.Now().UnixNano() / 1e6 - start);
 		fields := map[string]interface{}{
 			//"blockHash":         blockHash,
 			//"blockNumber":       hexutil.Uint64(blockNumber),
@@ -1129,11 +1135,11 @@ func (s *PublicTransactionPoolAPI) GetTransactionByBlock(ctx context.Context, bl
 		}
 
 		// Assign receipt status or post state.
-		//if len(receipt.PostState) > 0 {
-			//fields["root"] = hexutil.Bytes(receipt.PostState)
-		//} else {
+		if len(receipt.PostState) > 0 {
+			fields["root"] = hexutil.Bytes(receipt.PostState)
+		} else {
 			fields["status"] = hexutil.Uint(receipt.Status)
-		//}
+		}
 		if receipt.Logs == nil {
 			fields["logs"] = [][]*types.Log{}
 		}
@@ -1142,6 +1148,7 @@ func (s *PublicTransactionPoolAPI) GetTransactionByBlock(ctx context.Context, bl
 		//	fields["contractAddress"] = receipt.ContractAddress
 		//}
 		queue[key] = fields;
+		log.Debug("press,GetTransactionByBlock", "key", key, "get transaction end time;",time.Now().UnixNano() / 1e6 - start);
 	}
 	return queue, nil
 }
